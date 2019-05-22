@@ -140,6 +140,16 @@ class AwsResourceBase < Inspec.resource(1)
       client_args[:client_args][:endpoint] = opts[:aws_endpoint] if opts[:aws_endpoint]
       # this catches the stub_data true option for unit testing - and others that could be useful for consumers
       client_args[:client_args].update(opts[:client_args]) if opts[:client_args]
+      if opts.include?(:role_arn) || ENV.include?('AWS_ROLE_ARN')
+        role_credentials = Aws::AssumeRoleCredentials.new(
+          client: Aws::STS::Client.new(client_args[:client_args]),
+          role_arn: opts[:role_arn] || ENV['AWS_ROLE_ARN'],
+          role_session_name: "inspec"
+        )
+        puts "Setting role arn to #{opts[:role_arn] || ENV['AWS_ROLE_ARN']}"
+        # s3 = Aws::S3::Client.new(credentials: role_credentials)
+        client_args[:client_args][:credentials] = role_credentials
+      end
     end
     @aws = AwsConnection.new(client_args)
     # N.B. if/when we migrate AwsConnection to train, can update above and inject args via:
