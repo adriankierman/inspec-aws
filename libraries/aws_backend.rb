@@ -146,8 +146,6 @@ class AwsResourceBase < Inspec.resource(1)
           role_arn: opts[:role_arn] || ENV['AWS_ROLE_ARN'],
           role_session_name: "inspec"
         )
-        puts "Setting role arn to #{opts[:role_arn] || ENV['AWS_ROLE_ARN']}"
-        # s3 = Aws::S3::Client.new(credentials: role_credentials)
         client_args[:client_args][:credentials] = role_credentials
       end
     end
