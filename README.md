@@ -18,6 +18,12 @@ Set your AWS credentials in an `.envrc` file or export them in your shell. (See 
     export AWS_AVAILABILITY_ZONE="eu-west-3a"  
 ```
 
+Optionally assume an aws role when performing tests. Usually this is used for situations where you are managing permissions for InSpec across multiple accounts.
+```bash
+    # Example for optionally assuming an aws role  
+    export AWS_ROLE_ARN="arn:aws:iam::123456789012:role/compliance_role"  
+```
+
 ### Permissions
 Each resource will require specific permissions to perform the operations required for testing. For example, to test an AWS EC2 instance, your service principal will require the `ec2:DescribeInstances` and `iam:GetInstanceProfile` permissions. You can find a comprehensive list of each resource's required permissions in the [documentation](docs/).
 

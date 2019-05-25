@@ -140,6 +140,8 @@ class AwsResourceBase < Inspec.resource(1)
       client_args[:client_args][:endpoint] = opts[:aws_endpoint] if opts[:aws_endpoint]
       # this catches the stub_data true option for unit testing - and others that could be useful for consumers
       client_args[:client_args].update(opts[:client_args]) if opts[:client_args]
+      # below allows assuming a role if a role arn is provided
+      assume_role(opts, client_args) if should_assume_role?(opts)
     end
     @aws = AwsConnection.new(client_args)
     # N.B. if/when we migrate AwsConnection to train, can update above and inject args via:
@@ -154,6 +156,20 @@ class AwsResourceBase < Inspec.resource(1)
       raise ArgumentError, 'Expect each stub_data hash to have :client, :method and :data keys' if !stub.keys.all? { |a| %i(method data client).include?(a) }
       @aws.aws_client(stub[:client]).stub_responses(stub[:method], stub[:data])
     end
+  end
+
+  def should_assume_role?(opts)
+    opts.include?(:role_arn) || ENV['AWS_ROLE_ARN']
+  end
+
+  def assume_role(opts, client_args)
+    role_credentials = Aws::AssumeRoleCredentials.new(
+      client: Aws::STS::Client.new(client_args[:client_args]),
+      role_arn: opts[:role_arn] || ENV['AWS_ROLE_ARN'],
+      role_session_name: 'inspec',
+    )
+    client_args[:client_args][:credentials] = role_credentials
+    role_credentials
   end
 
   def validate_parameters(allowed_list)
