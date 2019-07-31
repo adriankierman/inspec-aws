@@ -69,6 +69,17 @@ class AwsEc2Instance < AwsResourceBase
     !@instance.empty?
   end
 
+  def has_termination_protection?
+    return false if !@instance
+    catch_aws_errors do
+      @resp = @aws.compute_client.describe_instance_attribute({instance_id: @instance[:instance_id], attribute: 'disableApiTermination'})
+      if !@resp.respond_to?('disable_api_termination')
+        raise Inspec::Exceptions::ResourceFailed, 'Expected to receive a field describing the disable api termination attribute - but none was received'
+      end
+      @resp.disable_api_termination.value
+    end
+  end
+  
   def security_group_ids
     return nil if !@instance[:security_groups]
     @instance[:security_groups].map { |sg| sg[:group_id] }
