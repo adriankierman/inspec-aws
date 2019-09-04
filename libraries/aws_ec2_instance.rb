@@ -2,6 +2,16 @@
 
 require 'aws_backend'
 
+class Util
+  def self.underscore(source)
+    source.gsub(/::/, '/')
+      .gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2')
+      .gsub(/([a-z\d])([A-Z])/, '\1_\2')
+      .tr('-', '_')
+      .downcase
+  end
+end
+
 class AwsEc2Instance < AwsResourceBase
   name 'aws_ec2_instance'
   desc 'Verifies settings for an AWS EC2 instance'
@@ -72,14 +82,14 @@ class AwsEc2Instance < AwsResourceBase
   def has_termination_protection?
     return false if !@instance
     catch_aws_errors do
-      @resp = @aws.compute_client.describe_instance_attribute({instance_id: @instance[:instance_id], attribute: 'disableApiTermination'})
+      @resp = @aws.compute_client.describe_instance_attribute({ instance_id: @instance[:instance_id], attribute: 'disableApiTermination' })
       if !@resp.respond_to?('disable_api_termination')
         raise Inspec::Exceptions::ResourceFailed, 'Expected to receive a field describing the disable api termination attribute - but none was received'
       end
       @resp.disable_api_termination.value
     end
   end
-  
+
   def security_group_ids
     return nil if !@instance[:security_groups]
     @instance[:security_groups].map { |sg| sg[:group_id] }
@@ -122,6 +132,46 @@ class AwsEc2Instance < AwsResourceBase
   }.each do |state_name|
     define_method state_name.tr('-', '_') + '?' do
       state == state_name
+    end
+  end
+
+  # additional helper methods for each attribute that are true/false
+  %w{
+    disableApiTermination sourceDestCheck ebsOptimized enaSupport
+  }.each do |attribute_name|
+    define_method('has_' + Util.underscore(attribute_name) + '?') do
+      return false if !@instance
+      catch_aws_errors do
+        @resp = @aws.compute_client.describe_instance_attribute({ instance_id: @instance[:instance_id], attribute: attribute_name })
+        @resp.send(Util.underscore(attribute_name).to_sym).value
+      end
+    end
+  end
+
+  # additional helper methods for each attribute that are a structure
+  %w{
+    instanceType kernel ramdisk userData instanceInitiatedShutdownBehavior
+    rootDeviceName sriovNetSupport
+  }.each do |attribute_name|
+    define_method(Util.underscore(attribute_name))  do
+      return false if !@instance
+      catch_aws_errors do
+        @resp = @aws.compute_client.describe_instance_attribute({ instance_id: @instance[:instance_id], attribute: attribute_name })
+        @resp.send(Util.underscore(attribute_name).to_sym).value
+      end
+    end
+  end
+
+  # additional helper methods for each attribute that are a list
+  %w{
+    blockDeviceMapping productCodes groupSet
+  }.each do |attribute_name|
+    define_method(Util.underscore(attribute_name))  do
+      return false if !@instance
+      catch_aws_errors do
+        @resp = @aws.compute_client.describe_instance_attribute({ instance_id: @instance[:instance_id], attribute: attribute_name })
+        @resp.send(Util.underscore(attribute_name).to_sym)
+      end
     end
   end
 

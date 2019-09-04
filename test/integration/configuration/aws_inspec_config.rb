@@ -7,7 +7,6 @@
 # If any of the @config keys are exported as environment variables in uppercase, these take precedence.
 require 'json'
 require 'yaml'
-require 'passgen'
 
 module AWSInspecConfig
   # helper method for adding random strings
@@ -18,8 +17,8 @@ module AWSInspecConfig
   # Config for terraform / inspec in the below hash
   @config = {
       # Generic AWS resource parameters
-      aws_region: 'us-east-1',
-      aws_availability_zone: 'us-east-1a',
+      aws_region: 'us-west-2',
+      aws_availability_zone: 'us-west-2a',
       aws_auto_scaling_group: "aws-auto-scaling-group-#{add_random_string}",
       aws_bucket_acl_policy_name: "aws-bucket-acl-policy-name-#{add_random_string}",
       aws_bucket_auth_name: "aws-bucket-auth-#{add_random_string}",
@@ -56,6 +55,7 @@ module AWSInspecConfig
       aws_delivery_channel_frequency: 'TwentyFour_Hours',
       aws_delivery_channel_name: "aws-delivery-channel-#{add_random_string}",
       aws_delivery_channel_sns_topic_name: "aws-delivery-channel-sns-topic-#{add_random_string}",
+      aws_ebs_snapshot_name: 'inspec-ebs-snapshot-name',
       aws_ebs_volume_name: 'inspec-ebs-volume-name',
       aws_ecs_cluster_name: "ecs-cluster-#{add_random_string}",
       aws_eks_cluster_name: "eks-cluster-#{add_random_string}",

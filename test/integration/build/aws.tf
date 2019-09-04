@@ -49,6 +49,7 @@ variable "aws_delivery_channel_frequency" {}
 variable "aws_delivery_channel_name" {}
 variable "aws_delivery_channel_sns_topic_name" {}
 variable "aws_ebs_volume_name" {}
+variable "aws_ebs_snapshot_name" {}
 variable "aws_ecs_cluster_name" {}
 variable "aws_eks_cluster_name" {}
 variable "aws_eks_role_name" {}
@@ -167,11 +168,20 @@ resource "aws_ebs_volume" "inspec_ebs_volume" {
   count             = "${var.aws_enable_creation}"
   availability_zone = "${var.aws_availability_zone}"
   size              = 1
+  encrypted         = true
 
   tags {
     Name = "${var.aws_ebs_volume_name}"
   }
 }
+resource "aws_ebs_snapshot" "inspec_ebs_snapshot" {
+  volume_id = "${aws_ebs_volume.inspec_ebs_volume.id}"
+
+  tags {
+    Name = "${var.aws_ebs_snapshot_name}"
+  }
+}
+
 
 # KMS Keys
 resource "aws_kms_key" "kms_key_enabled_rotating" {
@@ -592,13 +602,14 @@ resource "aws_db_instance" "db_rds" {
   storage_type         = "${var.aws_rds_db_storage_type}"
   engine               = "${var.aws_rds_db_engine}"
   engine_version       = "${var.aws_rds_db_engine_version}"
-  instance_class       = "db.t2.micro"
+  instance_class       = "db.t2.small"
   identifier           = "${var.aws_rds_db_identifier}"
   name                 = "${var.aws_rds_db_name}"
   username             = "${var.aws_rds_db_master_user}"
   password             = "testpassword"
   parameter_group_name = "default.mysql5.6"
   skip_final_snapshot  = true
+  storage_encrypted    = true
 
   tags = {
     Name        = "${var.aws_rds_db_name}"

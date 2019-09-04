@@ -356,3 +356,129 @@ class AwsEc2InstanceHasRolesTest < Minitest::Test
     assert @ec2.has_roles?
   end
 end
+
+class AwsEc2InstanceHasProtectionTest < Minitest::Test
+  def setup
+    data = {}
+    data[:method] = :describe_instances
+    mock_ec2 = {}
+    mock_ec2[:instance_id] = 'i-00b5186ddefdb50bf'
+    mock_ec2[:iam_instance_profile] = { arn: 'arn:aws:iam::336924118301:instance-profile/InSpecInstanceProfile' }
+    data[:data] = { :reservations => [{ :instances => [mock_ec2] }] }
+    data[:client] = Aws::EC2::Client
+    ec2_attribute_data = {}
+    ec2_attribute_data[:method] = :describe_instance_attribute
+    mock_ec2_attributes = {
+      disable_api_termination: {
+        value: true,
+      },
+      instance_id: "i-00b5186ddefdb50bf",
+    }
+    ec2_attribute_data[:client] = Aws::EC2::Client
+    ec2_attribute_data[:data] = mock_ec2_attributes
+    @ec2 = AwsEc2Instance.new(instance_id: 'i-00b5186ddefdb50bf', client_args: { stub_responses: true }, stub_data: [data, ec2_attribute_data])
+  end
+
+  def test_ec2_id
+    assert_equal(@ec2.instance_id, 'i-00b5186ddefdb50bf')
+  end
+
+  def test_has_termination_protection
+    assert @ec2.has_termination_protection?
+  end
+end
+
+class AwsEc2InstanceHasNoTerminationProtectionTest < Minitest::Test
+  def setup
+    data = {}
+    data[:method] = :describe_instances
+    mock_ec2 = {}
+    mock_ec2[:instance_id] = 'i-00b5186ddefdb50bf'
+    mock_ec2[:iam_instance_profile] = { arn: 'arn:aws:iam::336924118301:instance-profile/InSpecInstanceProfile' }
+    data[:data] = { :reservations => [{ :instances => [mock_ec2] }] }
+    data[:client] = Aws::EC2::Client
+    ec2_attribute_data = {}
+    ec2_attribute_data[:method] = :describe_instance_attribute
+    mock_ec2_attributes = {
+      disable_api_termination: {
+        value: false,
+      },
+      instance_id: "i-00b5186ddefdb50bf",
+    }
+    ec2_attribute_data[:client] = Aws::EC2::Client
+    ec2_attribute_data[:data] = mock_ec2_attributes
+    @ec2 = AwsEc2Instance.new(instance_id: 'i-00b5186ddefdb50bf', client_args: { stub_responses: true }, stub_data: [data, ec2_attribute_data])
+  end
+
+  def test_ec2_id
+    assert_equal(@ec2.instance_id, 'i-00b5186ddefdb50bf')
+  end
+
+  def test_has_no_termination_protection
+    refute @ec2.has_termination_protection?
+  end
+end
+
+
+class AwsEc2InstanceHasSourceDestinationCheckTest < Minitest::Test
+  def setup
+    data = {}
+    data[:method] = :describe_instances
+    mock_ec2 = {}
+    mock_ec2[:instance_id] = 'i-00b5186ddefdb50bf'
+    mock_ec2[:iam_instance_profile] = { arn: 'arn:aws:iam::336924118301:instance-profile/InSpecInstanceProfile' }
+    data[:data] = { :reservations => [{ :instances => [mock_ec2] }] }
+    data[:client] = Aws::EC2::Client
+    ec2_attribute_data = {}
+    ec2_attribute_data[:method] = :describe_instance_attribute
+    mock_ec2_attributes = {
+      source_dest_check: {
+        value: true,
+      },
+      instance_id: "i-00b5186ddefdb50bf",
+    }
+    ec2_attribute_data[:client] = Aws::EC2::Client
+    ec2_attribute_data[:data] = mock_ec2_attributes
+    @ec2 = AwsEc2Instance.new(instance_id: 'i-00b5186ddefdb50bf', client_args: { stub_responses: true }, stub_data: [data, ec2_attribute_data])
+  end
+
+  def test_ec2_id
+    assert_equal(@ec2.instance_id, 'i-00b5186ddefdb50bf')
+  end
+
+  def test_has_source_destination_check
+    assert @ec2.has_source_dest_check?
+  end
+end
+
+
+class AwsEc2InstanceStringSriovAttributeTest < Minitest::Test
+  def setup
+    data = {}
+    data[:method] = :describe_instances
+    mock_ec2 = {}
+    mock_ec2[:instance_id] = 'i-00b5186ddefdb50bf'
+    mock_ec2[:iam_instance_profile] = { arn: 'arn:aws:iam::336924118301:instance-profile/InSpecInstanceProfile' }
+    data[:data] = { :reservations => [{ :instances => [mock_ec2] }] }
+    data[:client] = Aws::EC2::Client
+    ec2_attribute_data = {}
+    ec2_attribute_data[:method] = :describe_instance_attribute
+    mock_ec2_attributes = {
+      sriov_net_support: {
+        value: 'simple',
+      },
+      instance_id: "i-00b5186ddefdb50bf",
+    }
+    ec2_attribute_data[:client] = Aws::EC2::Client
+    ec2_attribute_data[:data] = mock_ec2_attributes
+    @ec2 = AwsEc2Instance.new(instance_id: 'i-00b5186ddefdb50bf', client_args: { stub_responses: true }, stub_data: [data, ec2_attribute_data])
+  end
+
+  def test_ec2_id
+    assert_equal(@ec2.instance_id, 'i-00b5186ddefdb50bf')
+  end
+
+  def test_sriov_string
+    assert_equal(@ec2.sriov_net_support, 'simple')
+  end
+end
