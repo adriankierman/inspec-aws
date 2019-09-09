@@ -46,13 +46,6 @@ See also the [AWS documentation on RDS](https://docs.aws.amazon.com/AWSEC2/lates
       end
     end
 
-#### Iterate through all RDS instances
-    aws_rds_instances.db_instance_identifiers.each do |db_instance_identifier|
-      describe aws_rds_instance(db_instance_identifier) do
-        it { should be_encrypted }
-      end
-    end
-
 ## Matchers
 
 For a full list of available matchers, please visit our [Universal Matchers page](https://www.inspec.io/docs/reference/matchers/). 

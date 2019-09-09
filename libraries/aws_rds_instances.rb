@@ -15,6 +15,14 @@ class AwsRdsInstances < AwsResourceBase
     describe aws_rds_instances do
       its('entries.count') { should be > 1 }
     end
+
+    # Iterate through all instances
+    aws_rds_instances.db_instance_identifiers.each do |db_instance_identifier|
+      describe aws_rds_instance(db_instance_identifier) do
+        it { should have_encrypted_storage }
+        it { should be_encrypted }
+      end
+    end
   "
 
   attr_reader :table
