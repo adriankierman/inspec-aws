@@ -29,14 +29,14 @@ See also the [AWS documentation on RDS](https://docs.aws.amazon.com/AWSEC2/lates
 
 |Property                   | Description|
 | ---                       | --- |
-|instance_ids                 | The unique IDs of the RDS Instances returned. |
+|db_instance_identifiers    | The unique IDs of the RDS Instances returned. |
 |entries                    | Provides access to the raw results of the query, which can be treated as an array of hashes. |
    
 ## Examples
 
 #####Ensure a specific instance exists
     describe aws_rds_instances do
-      its('instance_ids') { should include 'vol-12345678' }
+      its('db_instance_identifiers') { should include 'rds-12345678' }
     end
 
 ##### Use the InSpec resource to request the IDs of all RDS instances, then test in-depth using `aws_rds_instance` to ensure all instances are encrypted and have a sensible size.
@@ -46,6 +46,12 @@ See also the [AWS documentation on RDS](https://docs.aws.amazon.com/AWSEC2/lates
       end
     end
 
+#### Iterate through all RDS instances
+    aws_rds_instances.db_instance_identifiers.each do |db_instance_identifier|
+      describe aws_rds_instance(db_instance_identifier) do
+        it { should be_encrypted }
+      end
+    end
 
 ## Matchers
 

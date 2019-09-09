@@ -32,11 +32,12 @@ class AwsRdsInstance < AwsResourceBase
       create_resource_methods(@rds_instance)
     end
   end
+
   def has_encrypted_storage?
     @rds_instance[:storage_encrypted]
   end
   # add this alias for consistency with ebs volumes
-  alias_method :encrypted?, :has_encrypted_storage?
+  alias encrypted? has_encrypted_storage?
 
   def tags
     begin
