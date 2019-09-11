@@ -9,6 +9,7 @@ class AwsEbsSnapshot < AwsResourceBase
   example "
     describe aws_ebs_snapshot('snap-12345678') do
       it { should be_encrypted }
+      it { should_not be_public }
     end
   "
 
@@ -40,6 +41,31 @@ class AwsEbsSnapshot < AwsResourceBase
         end
       end
     end
+  end
+
+  def create_volume_permissions
+    return [] if !@snapshot
+    catch_aws_errors do
+      @resp = @aws.compute_client.describe_snapshot_attribute({
+                                           attribute: "createVolumePermission",
+                                           snapshot_id: @snapshot[:snapshot_id],
+                                         })
+      if !@resp.respond_to?('create_volume_permissions')
+        raise Inspec::Exceptions::ResourceFailed, 'Expected to receive a field describing the create volume permissions - but none was received'
+      end
+      @resp.create_volume_permissions
+    end
+  end
+
+  def public?
+    self.create_volume_permissions.each do |permission|
+      return true if permission.key?(:group) && permission[:group] == 'all'
+    end
+    return false
+  end
+
+  def private?
+    !self.public?
   end
 
   def id

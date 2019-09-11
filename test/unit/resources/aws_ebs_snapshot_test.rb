@@ -108,3 +108,85 @@ class AwsEbsSnapshotHappyPathTest < Minitest::Test
   end
 
 end
+
+class AwsEbsSnapshotPrivateTest < Minitest::Test
+  def setup
+    data = {}
+    data[:method] = :describe_snapshots
+    mock_snapshot = {
+      description: "This is my copied snapshot.",
+      owner_id: "012345678910",
+      volume_id: "vol-049df61146c4d7901",
+      progress: "100%",
+      snapshot_id: "snap-066877671789bd71b",
+      start_time: Time.parse("2014-02-28T21:37:27.000Z"),
+      state: "completed",
+      encrypted: true,
+    }
+    mock_snapshot[:tags] = [{ :key => 'Name', :value => 'inspec-ebs-snapshot-name' }]
+    data[:data] = { snapshots: [mock_snapshot] }
+    data[:client] = Aws::EC2::Client
+    ebs_attribute_data = {}
+    ebs_attribute_data[:method] = :describe_snapshot_attribute
+    mock_ebs_attributes = {
+      create_volume_permissions: [user_id: '1234']
+    }
+    ebs_attribute_data[:client] = Aws::EC2::Client
+    ebs_attribute_data[:data] = mock_ebs_attributes
+    @snapshot = AwsEbsSnapshot.new(snapshot_id: 'vol-049df61146c4d7901', client_args: { stub_responses: true }, stub_data: [data, ebs_attribute_data, ebs_attribute_data])
+  end
+
+  def test_ec2_id
+    assert_equal(@snapshot.snapshot_id, 'snap-066877671789bd71b')
+  end
+
+  def test_is_snapshot_public
+    refute @snapshot.public?
+    assert @snapshot.private?
+  end
+
+  def test_permissions_valid
+    assert @snapshot.create_volume_permissions[0][:user_id] == '1234'
+  end
+end
+
+class AwsEbsSnapshotPublicTest < Minitest::Test
+  def setup
+    data = {}
+    data[:method] = :describe_snapshots
+    mock_snapshot = {
+      description: "This is my copied snapshot.",
+      owner_id: "012345678910",
+      volume_id: "vol-049df61146c4d7901",
+      progress: "100%",
+      snapshot_id: "snap-066877671789bd71b",
+      start_time: Time.parse("2014-02-28T21:37:27.000Z"),
+      state: "completed",
+      encrypted: true,
+    }
+    mock_snapshot[:tags] = [{ :key => 'Name', :value => 'inspec-ebs-snapshot-name' }]
+    data[:data] = { snapshots: [mock_snapshot] }
+    data[:client] = Aws::EC2::Client
+    ebs_attribute_data = {}
+    ebs_attribute_data[:method] = :describe_snapshot_attribute
+    mock_ebs_attributes = {
+      create_volume_permissions: [group: 'all']
+    }
+    ebs_attribute_data[:client] = Aws::EC2::Client
+    ebs_attribute_data[:data] = mock_ebs_attributes
+    @snapshot = AwsEbsSnapshot.new(snapshot_id: 'vol-049df61146c4d7901', client_args: { stub_responses: true }, stub_data: [data, ebs_attribute_data, ebs_attribute_data])
+  end
+
+  def test_ec2_id
+    assert_equal(@snapshot.snapshot_id, 'snap-066877671789bd71b')
+  end
+
+  def test_is_snapshot_public
+    assert @snapshot.public?
+    refute @snapshot.private?
+  end
+
+  def test_permissions_valid
+    assert @snapshot.create_volume_permissions[0][:group] == 'all'
+  end
+end
