@@ -15,10 +15,10 @@ class AwsEbsSnapshots < AwsResourceBase
   def initialize(opts = {})
     # Call the parent class constructor
     super(opts)
-    permitted_fields = [:filters, :owner_ids, :restorable_by_user_ids, :snapshot_ids]
+    permitted_fields = %i(filters owner_ids restorable_by_user_ids snapshot_ids)
     validate_parameters(permitted_fields)
     snapshot_rows = []
-    query_options = opts.clone.select {|key,value| permitted_fields.include?(key) }
+    query_options = opts.clone.select { |key, _value| permitted_fields.include?(key) }
     loop do
       catch_aws_errors do
         @api_response = @aws.compute_client.describe_snapshots(query_options)
