@@ -13,6 +13,8 @@ control 'aws-ebs-snapshot-1.0' do
     its ('snapshot_id') { should eq aws_ebs_snapshot_id }
     its('tags') { should include(key: 'Name', value: aws_ebs_snapshot_name) }
     it { should be_encrypted }
+    it { should_not be_public }
+    it { should be_private }
   end
 
   describe aws_ebs_snapshot(aws_ebs_snapshot_id) do
@@ -20,6 +22,8 @@ control 'aws-ebs-snapshot-1.0' do
     its ('snapshot_id') { should eq aws_ebs_snapshot_id }
     its('tags') { should include(key: 'Name', value: aws_ebs_snapshot_name) }
     it { should be_encrypted }
+    it { should_not be_public }
+    it { should be_private }
   end
 
   describe aws_ebs_snapshot(name: aws_ebs_snapshot_name) do
@@ -27,6 +31,8 @@ control 'aws-ebs-snapshot-1.0' do
     its ('snapshot_id') { should eq aws_ebs_snapshot_id }
     its('tags') { should include(key: 'Name', value: aws_ebs_snapshot_name) }
     it { should be_encrypted }
+    it { should_not be_public }
+    it { should be_private }
   end
 
   describe aws_ebs_snapshot(name: 'not_existing_snapshot_name') do
